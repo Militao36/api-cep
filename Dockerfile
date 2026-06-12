@@ -13,9 +13,14 @@ FROM debian:bookworm-slim
 
 WORKDIR /app
 
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends \
+		bash \
+		ca-certificates \
+		curl \
+	&& rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /app/api-cep .
-COPY cepdatabase.db .
-COPY cep.json .
 
 EXPOSE 8080
 

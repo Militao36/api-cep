@@ -3,11 +3,13 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 
-	"gorm.io/driver/sqlite"
+	"github.com/joho/godotenv"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
@@ -20,6 +22,22 @@ type Cep struct {
 	Municipio    string `json:"nome_municipio"`
 	Uf           string `json:"sigla_uf"`
 	Point        string `json:"centroide"`
+}
+
+func connection() *gorm.DB {
+	connectionString := os.Getenv("DATABASE_URL")
+
+	fmt.Println("connectionString", connectionString)
+	if connectionString == "" {
+		panic("Erro ao carregar variaveis de ambiente")
+	}
+
+	db, err := gorm.Open(mysql.Open(connectionString), &gorm.Config{})
+	if err != nil {
+		panic("erro ao conectar no banco de dados")
+	}
+
+	return db
 }
 
 func migrate(db *gorm.DB) error {
@@ -69,7 +87,6 @@ func preloadCepsReadFileJSON(db *gorm.DB, filePath string) error {
 			}
 
 			total += len(ceps)
-			log.Printf("%d CEPs importados", total)
 			ceps = ceps[:0]
 		}
 	}
@@ -91,10 +108,12 @@ func preloadCepsReadFileJSON(db *gorm.DB, filePath string) error {
 }
 
 func main() {
-	db, err := gorm.Open(sqlite.Open("cepdatabase.db"), &gorm.Config{})
+	err := godotenv.Load()
 	if err != nil {
-		panic(err)
+		fmt.Println("Erro ao carregar o arquivo .env")
 	}
+
+	db := connection()
 
 	if err := migrate(db); err != nil {
 		panic(err)
@@ -113,6 +132,7 @@ func main() {
 	} else {
 		log.Printf("banco já possui %d CEPs, pulando importação", totalCeps)
 	}
+	//
 
 	httpServer := &http.Server{
 		Addr: ":8080",
@@ -144,4 +164,5 @@ func main() {
 		panic(err)
 	}
 
+	fmt.Println("Servidor iniciado na porta 8080")
 }
