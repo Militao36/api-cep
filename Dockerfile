@@ -7,6 +7,8 @@ RUN go mod download
 
 COPY . .
 
+COPY .env .env
+
 RUN CGO_ENABLED=1 GOOS=linux go build -o api-cep .
 
 FROM debian:bookworm-slim

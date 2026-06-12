@@ -27,7 +27,6 @@ type Cep struct {
 func connection() *gorm.DB {
 	connectionString := os.Getenv("DATABASE_URL")
 
-	fmt.Println("connectionString", connectionString)
 	if connectionString == "" {
 		panic("Erro ao carregar variaveis de ambiente")
 	}
@@ -145,6 +144,7 @@ func main() {
 
 			var cepResult Cep
 			if err := db.First(&cepResult, "cep = ?", cep).Error; err != nil {
+				fmt.Println("error", err)
 				http.Error(w, "cep not found", http.StatusNotFound)
 				return
 			}
