@@ -34,7 +34,6 @@ func main() {
 	} else {
 		log.Printf("banco já possui %d CEPs, pulando importação", totalCeps)
 	}
-	//
 
 	httpServer := &http.Server{
 		Addr: ":8080",
@@ -53,12 +52,13 @@ func main() {
 			}
 
 			w.Header().Set("Content-Type", "application/json")
-			// retornar todo o resultado como JSON
 			json, err := json.Marshal(cepResult)
+
 			if err != nil {
 				http.Error(w, "internal server error", http.StatusInternalServerError)
 				return
 			}
+
 			w.Write(json)
 		}),
 	}
